@@ -1,0 +1,18 @@
+# 忽略整个 output 目录及其下所有内容
+output/
+
+# 忽略所有扩展名为 .exe 的文件
+*.exe
+
+# 忽略所有扩展名为 .o 和 .a 的文件（C语言编译中间文件）
+*.o
+*.a
+
+# 忽略特定文件（例如，本地环境配置文件）
+.env
+config.ini
+
+# 忽略操作系统的临时文件
+.DS_Store    # macOS
+Thumbs.db    # Windows
+*.swp        # Vim编辑器临时文件
