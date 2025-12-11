@@ -1,0 +1,6 @@
+{
+  "files.associations": {
+    "Gsm3forward.C": "cpp",
+    "Gsm3after.C": "cpp"
+  }
+}
