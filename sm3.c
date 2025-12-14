@@ -3,10 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-//
-// ======= 宏定义部分（循环左移、置换函数 P0 / P1）=======
-//
-
+//  宏定义部分（循环左移、置换函数 P0 / P1）
 // 循环左移（x 循环左移 n 位）
 #define ROTL(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
 
@@ -16,18 +13,14 @@
 // P1 置换函数：P1(X) = X ^ (X<<<15) ^ (X<<<23)
 #define P1(x) ((x) ^ ROTL((x), 15) ^ ROTL((x), 23))
 
-//
-// ======= IV 初始向量（SM3 标准固定）=======
-//
+//  IV 初始向量（SM3 标准固定）
 
 // 初始向量 V0
 static const uint32_t IV[8] = {
     0x7380166fUL, 0x4914b2b9UL, 0x172442d7UL, 0xda8a0600UL,
     0xa96f30bcUL, 0x163138aaUL, 0xe38dee4dUL, 0xb0fb0e4eUL};
 
-//
-// ======= 常量 Tj（第 j 轮使用的常数）=======
-//
+//  常量 Tj（第 j 轮使用的常数）
 
 // j = 0..15 使用
 static const uint32_t Tj_base0 = 0x79cc4519UL;
@@ -35,9 +28,7 @@ static const uint32_t Tj_base0 = 0x79cc4519UL;
 // j = 16..63 使用
 static const uint32_t Tj_base1 = 0x7a879d8aUL;
 
-//
-// ======= 布尔函数 FFj（随 j 改变）=======
-//
+//  布尔函数 FFj（随 j 改变）
 static inline uint32_t FFj(uint32_t x, uint32_t y, uint32_t z, int j)
 {
     // 第 0~15 轮：FF = X ^ Y ^ Z
@@ -48,9 +39,8 @@ static inline uint32_t FFj(uint32_t x, uint32_t y, uint32_t z, int j)
     return (x & y) | (x & z) | (y & z);
 }
 
-//
-// ======= 布尔函数 GGj（随 j 改变）=======
-//
+//  布尔函数 GGj（随 j 改变）
+
 static inline uint32_t GGj(uint32_t x, uint32_t y, uint32_t z, int j)
 {
     // 第 0~15 轮：GG = X ^ Y ^ Z
@@ -61,9 +51,7 @@ static inline uint32_t GGj(uint32_t x, uint32_t y, uint32_t z, int j)
     return (x & y) | ((~x) & z);
 }
 
-//
-// ======= 大端序读取和写入 32 位 =======
-//
+//  大端序读取和写入 32 位
 
 // 从大端字节序读取一个 32 位整数
 static uint32_t GETU32_BE(const uint8_t *b)
@@ -83,19 +71,14 @@ static void PUTU32_BE(uint8_t *b, uint32_t v)
     b[3] = (uint8_t)(v);
 }
 
-//
-// ======= 压缩函数（SM3 的核心）=======
+//  压缩函数（SM3 的核心）
 // V 为 256位中间向量，block 为 512bit 数据块（64 字节）
-//
 void sm3_compress(uint32_t V[8], const uint8_t block[64])
 {
     uint32_t W[68];  // 消息扩展数组 W0..W67
     uint32_t W1[64]; // W1[j] = W[j] ^ W[j+4]
 
-    //
-    // —— 1. 消息扩展 ——（根据 SM3 标准）
-    //
-
+    //  1. 消息扩展 （根据 SM3 标准）
     // 前 16 个字直接取原始消息
     for (int j = 0; j < 16; ++j)
     {
@@ -115,15 +98,11 @@ void sm3_compress(uint32_t V[8], const uint8_t block[64])
         W1[j] = W[j] ^ W[j + 4];
     }
 
-    //
-    // —— 2. 初始化寄存器 —— (A,B,C,D,E,F,G,H)
-    //
+    //  2. 初始化寄存器  (A,B,C,D,E,F,G,H)
     uint32_t A = V[0], B = V[1], C = V[2], D = V[3];
     uint32_t E = V[4], F = V[5], G = V[6], H = V[7];
 
-    //
-    // —— 3. 进行 64 轮压缩 ——
-    //
+    //  3. 进行 64 轮压缩
     for (int j = 0; j < 64; ++j)
     {
         uint32_t Tj = (j <= 15) ? Tj_base0 : Tj_base1; // 选择对应的 Tj
@@ -153,9 +132,7 @@ void sm3_compress(uint32_t V[8], const uint8_t block[64])
         E = P0(TT2);
     }
 
-    //
-    // —— 4. 最终向量 V = V ⊕ ABCDEFGH ——
-    //
+    //  4. 最终向量 V = V ⊕ ABCDEFGH
     V[0] ^= A;
     V[1] ^= B;
     V[2] ^= C;
@@ -166,17 +143,13 @@ void sm3_compress(uint32_t V[8], const uint8_t block[64])
     V[7] ^= H;
 }
 
-//
-// ======= SM3 哈希函数入口 =======
+//  SM3 哈希函数入口
 // msg: 输入消息
 // msglen: 消息长度
 // out[32]: 输出 32 字节哈希值
-//
 void sm3_hash(const uint8_t *msg, size_t msglen, uint8_t out[32])
 {
-    //
-    // —— 1. 填充消息 ——（标准 padding）
-    //
+    //  1. 填充消息 （标准 padding）
     uint64_t bitlen = (uint64_t)msglen * 8ULL; // 原文 bit 长度
 
     // 计算填充 0 的数量：保证末尾剩下 8 字节存放长度
@@ -210,9 +183,7 @@ void sm3_hash(const uint8_t *msg, size_t msglen, uint8_t out[32])
         buf[msglen + 1 + k + i] = (uint8_t)(bitlen >> (56 - 8 * i));
     }
 
-    //
-    // —— 2. 按每 64 字节一块进行压缩 ——
-    //
+    //  2. 按每 64 字节一块进行压缩
     uint32_t V[8];
     for (int i = 0; i < 8; ++i)
         V[i] = IV[i];
@@ -226,18 +197,14 @@ void sm3_hash(const uint8_t *msg, size_t msglen, uint8_t out[32])
 
     free(buf);
 
-    //
-    // —— 3. 输出哈希值（大端） ——
-    //
+    //  3. 输出哈希值（大端）
     for (int i = 0; i < 8; ++i)
     {
         PUTU32_BE(out + i * 4, V[i]);
     }
 }
 
-//
-// ======= 打印十六进制 =======
-//
+//  打印十六进制
 void print_hex(const uint8_t *buf, size_t len)
 {
     for (size_t i = 0; i < len; ++i)
@@ -247,9 +214,7 @@ void print_hex(const uint8_t *buf, size_t len)
     printf("\n");
 }
 
-//
-// ======= 主函数示例 =======
-//
+//  主函数示例
 int main(void)
 {
     char input[1024]; // 允许输入最长 1023 字符

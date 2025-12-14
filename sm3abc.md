@@ -117,18 +117,18 @@ IV =7380166f 4914b2b9 172442d7 da8a0600 a96f30bc 163138aa e38dee4d b0fb0e4e
 FOR j=0 TO 63
     SS1 ← ((A ≪ 12) + E + (Tj ≪ j)) ≪ 7
     SS2 ← SS1 ⊕ (A ≪ 12)
-    T T1 ← F Fj (A, B, C) + D + SS2 + W′j
-    T T2 ← GGj (E, F, G) + H + SS1 + Wj
+    TT1 ← FFj (A, B, C) + D + SS2 + W′j
+    TT2 ← GGj (E, F, G) + H + SS1 + Wj
     D ← C
     C ← B ≪ 9
     B ← A
-    A ← T T1
+    A ← TT1
     H ← G
     G ← F ≪ 19
     F ← E
-    E ← P0(T T2)
+    E ← P0(TT2)
 ENDFOR
-V(i+1) ← ABCDEF GH ⊕ V(i)
+V(i+1) ← ABCDEFGH ⊕ V(i)
 ```
 
 其中
@@ -143,7 +143,7 @@ P0(X) = X ⊕ (X ≪ 9) ⊕ (X ≪ 17)
 ```
 
 ```
-F Fj (X, Y, Z)= 
+FFj (X, Y, Z)= 
 X ⊕ Y ⊕ Z (0 ≤ j ≤ 15)
 (X ∧ Y ) ∨ (X ∧ Z) ∨ (Y ∧ Z ) (16 ≤ j ≤ 63)
 
